@@ -1,4 +1,4 @@
-#summary openark kit: common utilities for MySQL
+#summary openark kit: Common utilities for MySQL
 
 = Introduction =
 
