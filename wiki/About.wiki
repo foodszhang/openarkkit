@@ -1,4 +1,5 @@
-#summary One-sentence summary of this page.
+#summary The openark kit is a set of utilities for MySQL which solve everyday maintenance tasks, that may be complicated or time consuming to work by hand.
+
 
 = Introduction =
 
