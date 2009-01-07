@@ -1,14 +1,10 @@
-#summary The openark kit is a set of utilities for MySQL which solve everyday maintenance tasks, that may be complicated or time consuming to work by hand.
-
+#summary openark kit: common utilities for MySQL
 
 = Introduction =
 
-Add your content here.
+The openark kit is a set of utilities for MySQL. They solve everyday maintenance tasks, which may be complicated or time consuming to work by hand.
 
 
 = Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+See the [http://code.openark.org/oak openark kit home page]
