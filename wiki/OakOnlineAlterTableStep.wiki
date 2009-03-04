@@ -6,7 +6,7 @@ This page describes the steps taken in order to implement an online ALTER TABLE.
 
 = Details =
 oak-online-alter-table requires the following:
-* The table must have an AUTO_INCREMENT column
-* AUTO_INCREMENT values are never reused. Thus, if a row is DELETEd, it's AUTO_INCREMENT value must never appear again (this is a normal behaviour)
-* No 'AFTER' triggers may be defined on the table
-* Table name must be at most 57 characters long
+  * The table must have an AUTO_INCREMENT column
+  * AUTO_INCREMENT values are never reused. Thus, if a row is DELETEd, it's AUTO_INCREMENT value must never appear again (this is a normal behaviour)
+  * No 'AFTER' triggers may be defined on the table
+  * Table name must be at most 57 characters long
