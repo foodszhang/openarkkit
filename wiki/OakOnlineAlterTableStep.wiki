@@ -1,0 +1,7 @@
+#oak-online-alter-table steps
+
+= Introduction =
+
+This page describes the steps taken in order to implement an online ALTER TABLE.
+
+= Details =
