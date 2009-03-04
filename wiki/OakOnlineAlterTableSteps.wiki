@@ -1,4 +1,4 @@
-#oak-online-alter-table steps
+oak-online-alter-table steps
 
 = Introduction =
 
