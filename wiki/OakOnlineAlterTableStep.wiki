@@ -11,6 +11,15 @@ oak-online-alter-table requires the following:
   * No 'AFTER' triggers may be defined on the table
   * Table name must be at most 57 characters long
 
+oak-online-alter-table works by creating a 'ghost' table, on which the ALTER is performed, and which is synchronized online with the original table.
+
+Assuming original table name is `T`, and 'ghost' table name is 'G(T)',
+
 The steps are as follows:
-  # d
-  # r
+  # Verify table T exists
+  # Verify T has an AUTO_INCREMENT column
+  # Remove possible 'AFTER' triggers create by this utility (in case of crash or cancel during previous run). The utility creates the triggers with known names, highly unlikely to be used by anyone.
+  # Verify T has no 'AFTER' triggers
+  # Look for G(T), in case it was left there by prior execution of this utility and was not cleaned up (crash, cancel)
+  # Create the ghost table G(T). This is a canvas table, on which changes are made. It will later replace the original table T. The real name chosen for this table is an unlikely one.
+  # Execute an ALTER TABLE on G(T) as specified. Any errors in the ALTER itself are detected here.
