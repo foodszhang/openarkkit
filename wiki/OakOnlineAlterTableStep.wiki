@@ -8,6 +8,7 @@ This page describes the steps taken in order to implement an online ALTER TABLE.
 oak-online-alter-table requires the following:
   * The table must have an AUTO_INCREMENT column
   * AUTO_INCREMENT values are never reused. Thus, if a row is DELETEd, it's AUTO_INCREMENT value must never appear again (this is a normal behaviour)
+  * AUTO_INCREMENT column must not be dropped or renamed
   * No 'AFTER' triggers may be defined on the table
   * Table name must be at most 57 characters long
 
@@ -23,3 +24,17 @@ The steps are as follows:
   # Look for G(T), in case it was left there by prior execution of this utility and was not cleaned up (crash, cancel)
   # Create the ghost table G(T). This is a canvas table, on which changes are made. It will later replace the original table T. The real name chosen for this table is an unlikely one.
   # Execute an ALTER TABLE on G(T) as specified. Any errors in the ALTER itself are detected here.
+  # Verify the AUTO_INCREMENT column has not been dropped or renamed
+  # Create an AFTER DELETE trigger on T, which deletes corresponding rows from G(T). Since no rows exist on G(T) at this time, nothing is really deleted on G(T).
+  # Create an AFTER UPDATE trigger on T, which uses REPLACE INTO G(T) with row values. Since no rows exist on G(T) at this time, nothing is really changed on G(T).
+  # Create an AFTER INSERT trigger on T, which uses REPLACE INTO G(T) with row values. 
+  # LOCK TABLES T and G()T with WRITE lock
+  # Get a snapshot on the AUTO_INCREMENT MIN and MAX values. The MIN & MAX values are named the "pass range"
+  # UNLOCK the two tables.
+  # Iterate through the pass range in chunks. For each chunk, copy rows from T to G(T) using INSERT IGNORE. Optionally sleep after each chunk is copied
+  # Iterate through the pass range in chunks. For each chunk, delete rows from G(T) in the current chunk range, which do not appear (according to AUTO_INCREMENT values) in T, for that same chunk range.
+  # Rename T to OLD(T), G(T) to T
+  # Drop OLD(T)
+
+
+  
