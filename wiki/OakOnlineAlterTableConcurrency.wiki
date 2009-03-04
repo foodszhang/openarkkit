@@ -1,0 +1,7 @@
+#summary oak-online-alter-table concurrency
+
+= Introduction =
+
+This page describes the concurrency issues with oak-online-alter-table
+
+= Details =
