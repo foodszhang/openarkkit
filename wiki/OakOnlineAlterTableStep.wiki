@@ -14,7 +14,7 @@ oak-online-alter-table requires the following:
 
 oak-online-alter-table works by creating a 'ghost' table, on which the ALTER is performed, and which is synchronized online with the original table.
 
-Assuming original table name is `T`, and 'ghost' table name is 'G(T)',
+Assuming original table name is 'T', and 'ghost' table name is 'G(T)',
 
 The steps are as follows:
   # Verify table T exists
