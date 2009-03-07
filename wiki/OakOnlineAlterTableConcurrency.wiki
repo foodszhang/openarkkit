@@ -5,3 +5,21 @@
 This page describes the concurrency issues with oak-online-alter-table
 
 = Details =
+
+To alter a table online, the utility creates a 'ghost' table, then synchronizes it with the original table, and lastly makes a swap.
+Listed below are concurrency questions:
+
+  * How do we avoid long table locks in MyISAM?
+  * How do we avoid long row locks in InnoDB?
+  * How do we ensure ghost table is indeed in sync with the original table?
+  * How do we handle InnoDB in REPEATABLE_READ isolation level?
+  
+The steps are described here, and will be discussed below.
+
+Let's assume the original table is called T. We call our ghost table G(T).
+
+The making of G(T) is divided in concept to two parts:
+  # Add triggers on T which 'replicate' into G(T)
+  # deal with rows on T which existed prior to declaring the triggers.
+  
+  
