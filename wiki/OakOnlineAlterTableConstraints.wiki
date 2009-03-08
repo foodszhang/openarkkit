@@ -16,6 +16,7 @@ The steps are described here, and will be discussed below.
 
 Let's assume the original table is called T. We call our ghost table G(T).
 To discuss the UNIQUE issues, let's assume T is defiend as follows:
+`
 CREATE TABLE T (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   ...
@@ -24,6 +25,7 @@ CREATE TABLE T (
   UNIQUE KEY(u),
   ...
 );
+`
 So the 'u' column will have unique values.
 Our discussing will apply when there are still more unique keys on T, including compound keys.
 
