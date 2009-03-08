@@ -3,8 +3,8 @@
 = Introduction =
 
 This page describes the concurrency issues with oak-online-alter-table.
-See [http://code.google.com/p/openarkkit/wiki/OakOnlineAlterTableSteps this page] for the general steps taken in oak-online-alter-table.
-See [http://code.google.com/p/openarkkit/wiki/OakOnlineAlterTableConstraints this page] for issues with constraints (UNIQUE KEYs) and how they are handled.
+  * See [http://code.google.com/p/openarkkit/wiki/OakOnlineAlterTableSteps this page] for the general steps taken in oak-online-alter-table.
+  * See [http://code.google.com/p/openarkkit/wiki/OakOnlineAlterTableConstraints this page] for issues with constraints (UNIQUE KEYs) and how they are handled.
 
 
 = Details =
