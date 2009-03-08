@@ -10,6 +10,7 @@ oak-online-alter-table requires the following:
   * AUTO_INCREMENT values are never reused. Thus, if a row is DELETEd, it's AUTO_INCREMENT value must never appear again (this is a normal behaviour)
   * AUTO_INCREMENT column must not be dropped or renamed
   * No 'AFTER' triggers may be defined on the table
+  * Foreign keys currently not supported
   * Table name must be at most 57 characters long
 
 oak-online-alter-table works by creating a 'ghost' table, on which the ALTER is performed, and which is synchronized online with the original table.
@@ -27,9 +28,10 @@ The steps are as follows:
   # Verify the AUTO_INCREMENT column has not been dropped or renamed
   # Create an AFTER DELETE trigger on T, which deletes corresponding rows from G(T). Since no rows exist on G(T) at this time, nothing is really deleted on G(T).
   # Create an AFTER UPDATE trigger on T, which uses REPLACE INTO G(T) with row values. Since no rows exist on G(T) at this time, nothing is really changed on G(T).
-  # Create an AFTER INSERT trigger on T, which uses REPLACE INTO G(T) with row values. 
-  # LOCK TABLES T and G()T with WRITE lock
+  # Create an AFTER INSERT trigger on T, which uses REPLACE INTO G(T) with row values.
+  # LOCK TABLES T and G(T) with WRITE lock
   # Get a snapshot on the AUTO_INCREMENT MIN and MAX values. The MIN & MAX values are named the "pass range"
+  # Remove all rows from G(T) which may have been accumulated due to the AFTER INSERT trigger.
   # UNLOCK the two tables.
   # Iterate through the pass range in chunks. For each chunk, copy rows from T to G(T) using INSERT IGNORE. Optionally sleep after each chunk is copied
   # Iterate through the pass range in chunks. For each chunk, delete rows from G(T) in the current chunk range, which do not appear (according to AUTO_INCREMENT values) in T, for that same chunk range.
@@ -37,4 +39,3 @@ The steps are as follows:
   # Drop OLD(T)
 
 
-  
