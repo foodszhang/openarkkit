@@ -63,7 +63,6 @@ Here are the taken steps. We will discuss the constraint issues for each step.
       Since less rows appear on G(T) than on T at this stage, we cannot fail a constraint on G(T).
   # LOCK TABLES T and G(T) with WRITE lock
   # Get a snapshot on the AUTO_INCREMENT MIN and MAX values. The MIN & MAX values are named the "pass range"
-  # Remove all rows from G(T) which may have been accumulated due to the AFTER INSERT trigger.
     * Since we remove rows, we pose no UNIQUE contradictions.
   # UNLOCK the two tables.
     * Any UPDATE on T is converted to REPLACE INTO on G(T).

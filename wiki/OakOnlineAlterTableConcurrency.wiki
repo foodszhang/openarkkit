@@ -85,14 +85,6 @@ Here are the taken steps. We will discuss the concurrency issues for each step.
     * Some of the rows in the range may be later UPDATEd.
     * By virtue of our requirements, no new rows will be INSERTed in this range.
       If our requirements are not met - the behaviour of this tool is undefined.
-  # Remove all rows from G(T) which may have been accumulated due to the AFTER INSERT trigger.
-    * This step is actually not strictly required. It is easier to know we have a "clean plate".
-      It may be removed in the future.
-    * It is assumed that the number of rows INSERTed during thie very short period is not
-      large (it should be just fractions of a second), and therefore the DELETEion should
-      not take long.
-    * Rows are removed with DELETE FROM ..., and not via TRUNCATE TABLE, since there's a
-      problem running TRUNCATE TABLE on a table locked with WRITE lock.
   # UNLOCK the two tables.
     * INSERTs, UPDATEs, DELETEs will now run again. See discussion for "Create trigger AFTER INSERT".
   # Iterate through the pass range in chunks. For each chunk, copy rows from T to G(T) using INSERT IGNORE. Optionally sleep after each chunk is copied
