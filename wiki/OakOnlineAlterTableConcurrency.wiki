@@ -29,11 +29,11 @@ Here are the taken steps. We will discuss the concurrency issues for each step.
 
   # Verify table T exists
     * No issues here. If T doesn't exist, we quit.
-  # Verify T has an AUTO_INCREMENT column
-    * No issues here. If no AUTO_INCREMENT column defined - we quit.
   # Remove possible 'AFTER' triggers create by this utility (in case of crash or cancel during previous run). The utility creates the triggers with known names, highly unlikely to be used by anyone.
     * No issues here. It is assumed no one will define triggers named the same way this
       utility names them.
+  # Verify T has single-column UNIQUE KEY(s)
+    * No issues here. If no single-column UNIQUE KEYs exist - we quit.
   # Verify T has no 'AFTER' triggers
     * If this test passes, we move on. It is possible that someone adds triggers just
       after this test - but the utility will not check for that. It should be generally
@@ -45,8 +45,11 @@ Here are the taken steps. We will discuss the concurrency issues for each step.
     * Using "CREATE TABLE ... LIKE ...". There is a lock for just an instant. No issues here.
   # Execute an ALTER TABLE on G(T) as specified. Any errors in the ALTER itself are detected here.
     * Since no one is using G(T), there's no concurrency issues here.
-  # Verify the AUTO_INCREMENT column has not been dropped or renamed
-    * Still no issues, assuming T's schema was not altered during this time.s
+  # Verify T has single-column UNIQUE KEY(s)
+    * No issues here. If no single-column UNIQUE KEYs exist - we quit.
+  # Verify T and G(T) share at least one single-column UNIQUE KEY
+    * Still no issues. We quit if no shared UNIQUE KEY columns exist
+  # Choose a UNIQUE KEY by which to chunk
   # Create an AFTER DELETE trigger on T, which deletes corresponding rows from G(T). Since no rows exist on G(T) at this time, nothing is really deleted on G(T).
     * The CREATE TRIGEGR statement puts a very short LOCK on T.
       At any case, nothing will happen on G(T) since there are no rows to delete on G(T).
@@ -79,8 +82,8 @@ Here are the taken steps. We will discuss the concurrency issues for each step.
     * When the statement completes, we are now the exclusive owners of the two tables.
     * Any INSERT/UPDATE/DELETE invoked just *after* this stage will suspend and till we unlock the tables.
     * We now have a frozen time.
-  # Get a snapshot on the AUTO_INCREMENT MIN and MAX values. The MIN & MAX values are named the "pass range"
-    * The "pass range" denotes the AUTO_INCREMENT values range, present in the table at 12:00.
+  # Get a snapshot on the chosen UNIQUE KEY's MIN and MAX values. The MIN & MAX values are named the "pass range"
+    * The "pass range" denotes the chosen UNIQUE KEY values range, present in the table at 12:00.
     * Some of the rows in the range may be later DELETEd.
     * Some of the rows in the range may be later UPDATEd.
     * By virtue of our requirements, no new rows will be INSERTed in this range.
@@ -88,11 +91,11 @@ Here are the taken steps. We will discuss the concurrency issues for each step.
   # UNLOCK the two tables.
     * INSERTs, UPDATEs, DELETEs will now run again. See discussion for "Create trigger AFTER INSERT".
   # Iterate through the pass range in chunks. For each chunk, copy rows from T to G(T) using INSERT IGNORE. Optionally sleep after each chunk is copied
-    * Assuming chunk size of 1000, we read first 1000 AUTO_INCREMENT values from T in the *pass range*,
+    * Assuming chunk size of 1000, we read first 1000 chosen UNIQUE KEY values from T in the *pass range*,
     * We copy rows from T to G(T) using
-      INSERT IGNORE INTO G(T) ... SELECT ... FROM T ... WHERE auto_increment_column IN (..., read values,...),
-      for rows with AUTO_INCREMENT values from the above reading.
-    * What happens if rows are DELETEd from the chunk's range after we've read their AUTO_INCREMENT values?
+      INSERT IGNORE INTO G(T) ... SELECT ... FROM T ... WHERE chosen_unique_key_column IN (..., read values,...),
+      for rows with chosen UNIQUE KEY values from the above reading.
+    * What happens if rows are DELETEd from the chunk's range after we've read their chosen UNIQUE KEY values?
       Nothing bad happens, since in the "copy" stage these rows simply do not get copied.
     * How about DELETEs which happen *during* the copy?
       * In MyISAM, this is impossible, since the SELECT adds a READ LOCK on T.
@@ -100,7 +103,7 @@ Here are the taken steps. We will discuss the concurrency issues for each step.
         DELETEs which were already pending when the INSERT IGNORE ... SELECT started will
         cause the INSERT to block, since InnoDB adds locks on DELETEd rows. Our
         LOCK IN SHARE mode will make sure we block.
-    * What happens if rows are UPDATEd from the chunk's range after we've read their AUTO_INCREMENT values?
+    * What happens if rows are UPDATEd from the chunk's range after we've read their chosen UNIQUE KEY values?
       Nothing bad happens, since in the "copy" stage these updates simply get to be copied.
     * How about UPDATEs which happen *during* the copy?
       Same as in DELETE. See above.
@@ -112,9 +115,8 @@ Here are the taken steps. We will discuss the concurrency issues for each step.
       * Any row in T which is *later* than the *pass range*, also appears in G(T) (as result of the AFTER INSERT trigger)
       * A row which appears in T appears in the exact same way in G(T) (UPDATEs are propagarted correctly)
       * There may be rows in G(T) which have been deleted from T.
-  # Iterate through the pass range in chunks. For each chunk, delete rows from G(T) in the current chunk range, which do not appear (according to AUTO_INCREMENT values) in T, for that same chunk range.
+  # Iterate through the pass range in chunks. For each chunk, delete rows from G(T) in the current chunk range, which do not appear (according to chosen UNIQUE KEY values) in T, for that same chunk range.
     * This part fixes the DELETE issue from above. It removes, per chunk, rows from G(T) which are no longer in T.
-    * Assumming the requirements are met: no AUTO_INCREMENT value is ever re-used, there is no concurrency issue here.
   # Rename T to OLD(T), G(T) to T
     * This puts a WRITE LOCK on both tables.
     * Still need to be checked:

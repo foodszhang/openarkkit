@@ -9,7 +9,7 @@ This page describes the constraints issues with oak-online-alter-table.
 
 To alter a table online, the utility creates a 'ghost' table, then synchronizes it with the original table, and lastly makes a swap.
 We will answer the following questions:
-  * How is the constraint for the AUTO_INCREMENT column maintained?
+  * How is the constraint for an AUTO_INCREMENT column maintained?
   * How is the constraint for other UNIQUE KEYs maintained?
 
 The steps are described here, and will be discussed below.
@@ -36,21 +36,23 @@ The making of G(T) is divided in concept to two parts:
 Here are the taken steps. We will discuss the constraint issues for each step.
 
   # Verify table T exists
-  # Verify T has an AUTO_INCREMENT column
   # Remove possible 'AFTER' triggers create by this utility (in case of crash or cancel during previous run). The utility creates the triggers with known names, highly unlikely to be used by anyone.
+  # Verify T has single-column UNIQUE KEY(s)
   # Verify T has no 'AFTER' triggers
   # Look for G(T), in case it was left there by prior execution of this utility and was not cleaned up (crash, cancel)
   # Create the ghost table G(T). This is a canvas table, on which changes are made. It will later replace the original table T. The real name chosen for this table is an unlikely one.
   # Execute an ALTER TABLE on G(T) as specified. Any errors in the ALTER itself are detected here.
-  # Verify the AUTO_INCREMENT column has not been dropped or renamed
+  # Verify G(T) has single-column UNIQUE KEY(s)
     * No issues, assuming T's schema was not altered during this time.s
+  # Verify T and G(T) share at least one single-column UNIQUE KEY
+  # Choose a UNIQUE KEY by which to chunk
   # Create an AFTER DELETE trigger on T, which deletes corresponding rows from G(T). Since no rows exist on G(T) at this time, nothing is really deleted on G(T).
     Nothing will happen on G(T) since there are no rows to delete on G(T).
   # Create an AFTER UPDATE trigger on T, which uses REPLACE INTO G(T) with row values. Since no rows exist on G(T) at this time, nothing is really changed on G(T).
     Nothing will happen on G(T) since there are no rows to update on G(T).
   # Create an AFTER INSERT trigger on T, which uses REPLACE INTO G(T) with row values.
     * Rows will now start to add on G(T).
-    * The AUTO_INCREMENT values are copied from T as they were.
+    * The UNIQUE KEY values, including AUTO_INCREMENT values are copied from T as they were.
     * Since the trigger acts AFTER INSERT, only rows which were admitted in T get to be inserted to G(T).
       By virtue of constraints on T, there should be no issues on G(T).
     * INSERTs, UPDATEs, DELETEs are now running against T, and hence on G(T).
@@ -62,7 +64,7 @@ Here are the taken steps. We will discuss the constraint issues for each step.
       These commands are propagated to G(T) as they were on T.
       Since less rows appear on G(T) than on T at this stage, we cannot fail a constraint on G(T).
   # LOCK TABLES T and G(T) with WRITE lock
-  # Get a snapshot on the AUTO_INCREMENT MIN and MAX values. The MIN & MAX values are named the "pass range"
+  # Get a snapshot on the chosen UNIQUE KEY's MIN and MAX values. The MIN & MAX values are named the "pass range"
     * Since we remove rows, we pose no UNIQUE contradictions.
   # UNLOCK the two tables.
     * Any UPDATE on T is converted to REPLACE INTO on G(T).
@@ -86,7 +88,7 @@ Here are the taken steps. We will discuss the constraint issues for each step.
       * On T there is no constraint violation, since row 1000 was previously removed.
       * On G(T) there will be no constraint violation, since a REPLACE INTO is issued,
         removing row 1000 from G(T).
-  # Iterate through the pass range in chunks. For each chunk, delete rows from G(T) in the current chunk range, which do not appear (according to AUTO_INCREMENT values) in T, for that same chunk range.
+  # Iterate through the pass range in chunks. For each chunk, delete rows from G(T) in the current chunk range, which do not appear (according to chosen UNIQUE KEY values) in T, for that same chunk range.
     * Since we remove rows, we do not pose constraints violations.
   # Rename T to OLD(T), G(T) to T
   # Drop OLD(T)
