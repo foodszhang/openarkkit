@@ -8,9 +8,8 @@ This page describes the constraints issues with oak-online-alter-table.
 = Details =
 
 To alter a table online, the utility creates a 'ghost' table, then synchronizes it with the original table, and lastly makes a swap.
-We will answer the following questions:
-  * How is the constraint for an AUTO_INCREMENT column maintained?
-  * How is the constraint for other UNIQUE KEYs maintained?
+We will answer the following question:
+How are the constraints for UNIQUE KEYs maintained?
 
 The steps are described here, and will be discussed below.
 
@@ -26,7 +25,7 @@ CREATE TABLE T (
   ...
 );
 }}}
-So the 'u' column will have unique values.
+So the 'u' column will have unique values. The above example presents a single-column key, though compound keys are also supported.
 Our discussing will apply when there are still more unique keys on T, including compound keys.
 
 The making of G(T) is divided in concept to two parts:
@@ -37,14 +36,14 @@ Here are the taken steps. We will discuss the constraint issues for each step.
 
   # Verify table T exists
   # Remove possible 'AFTER' triggers create by this utility (in case of crash or cancel during previous run). The utility creates the triggers with known names, highly unlikely to be used by anyone.
-  # Verify T has single-column UNIQUE KEY(s)
+  # Verify T has UNIQUE KEY(s)
   # Verify T has no 'AFTER' triggers
   # Look for G(T), in case it was left there by prior execution of this utility and was not cleaned up (crash, cancel)
   # Create the ghost table G(T). This is a canvas table, on which changes are made. It will later replace the original table T. The real name chosen for this table is an unlikely one.
   # Execute an ALTER TABLE on G(T) as specified. Any errors in the ALTER itself are detected here.
-  # Verify G(T) has single-column UNIQUE KEY(s)
+  # Verify G(T) has UNIQUE KEY(s)
     * No issues, assuming T's schema was not altered during this time.s
-  # Verify T and G(T) share at least one single-column UNIQUE KEY
+  # Verify T and G(T) share at least one UNIQUE KEY
   # Choose a UNIQUE KEY by which to chunk
   # Create an AFTER DELETE trigger on T, which deletes corresponding rows from G(T). Since no rows exist on G(T) at this time, nothing is really deleted on G(T).
     Nothing will happen on G(T) since there are no rows to delete on G(T).

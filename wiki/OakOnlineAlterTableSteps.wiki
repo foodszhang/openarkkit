@@ -6,8 +6,8 @@ This page describes the steps taken in order to implement an online ALTER TABLE.
 
 = Details =
 oak-online-alter-table requires the following:
-  * The table must have at least one single-column UNIQUE KEY
-  * The altered table must share a single-column UNIQUE KEY with the original one
+  * The table must have at least one UNIQUE KEY (may expand one or more columns)
+  * The altered table must share a UNIQUE KEY with the original one
   * No 'AFTER' triggers may be defined on the table
   * Foreign keys currently not supported
   * Table name must be at most 57 characters long
@@ -20,12 +20,12 @@ The steps are as follows:
   # Verify table T exists
   # Remove possible 'AFTER' triggers created by this utility (in case of crash or cancel during previous run). The utility creates the triggers with known names, highly unlikely to be used by anyone.
   # Verify T has no 'AFTER' triggers
-  # Verify T has single-column UNIQUE KEY(s)
+  # Verify T has UNIQUE KEY(s)
   # Look for G(T), in case it was left there by prior execution of this utility and was not cleaned up (crash, cancel)
   # Create the ghost table G(T). This is a canvas table, on which changes are made. It will later replace the original table T. The real name chosen for this table is an unlikely one.
   # Execute an ALTER TABLE on G(T) as specified. Any errors in the ALTER itself are detected here.
-  # Verify G(T) has single-column UNIQUE KEY(s)
-  # Verify T and G(T) share at least one single-column UNIQUE KEY
+  # Verify G(T) has UNIQUE KEY(s)
+  # Verify T and G(T) share at least one UNIQUE KEY
   # Choose a UNIQUE KEY by which to chunk
   # Create an AFTER DELETE trigger on T, which deletes corresponding rows from G(T). Since no rows exist on G(T) at this time, nothing is really deleted on G(T).
   # Create an AFTER UPDATE trigger on T, which uses REPLACE INTO G(T) with row values. Since no rows exist on G(T) at this time, nothing is really changed on G(T).

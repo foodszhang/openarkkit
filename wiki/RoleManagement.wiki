@@ -27,6 +27,9 @@ A workable password in MySQL is a hashed text which is (in old-passsswords=1) a 
 It follows that any text which contains non-hexadecimal characters can never be a hashed password.
 Therefore, the password for a role-account is always "oak:role:account:XX:#####################" - 41 characters in length, where XX is the role's unique identifier.
 
+So, A role entry would be something like (user, host, password):
+('webuser-role', '*bd72562cad6d032efe', 'oak:role:account:####################')
+
 Normal accounts can be associated with zero or more roles. The associations are also mapped to the `mysql.user` table.
 An account-role association is presented in the following manner:
 `User` is same as account's `User`
